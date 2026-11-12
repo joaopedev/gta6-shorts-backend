@@ -33,7 +33,7 @@
     "typeorm": "^0.3.27"
   },
   "overrides": {
-    "multer": "^2.3.0"
+    "multer": "$multer"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",

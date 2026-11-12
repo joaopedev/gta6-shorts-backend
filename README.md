@@ -3,6 +3,10 @@
 API local em NestJS para pesquisar Reels públicos pela HikerAPI, fazer curadoria,
 baixar os vídeos aprovados e enviá-los ao YouTube usando OAuth 2.0.
 
+O painel também possui um editor de vídeo e um agente de cortes. O agente recebe um
+arquivo de vídeo autorizado, transcreve o áudio com timestamps, seleciona os melhores
+trechos com IA e renderiza os candidatos em formato vertical usando FFmpeg.
+
 ## Executar
 
 1. Abra `.env` e informe pelo menos `HIKER_API_KEY`.
@@ -50,3 +54,5 @@ atualiza o `.env` sem imprimir o `client_secret`.
 - O servidor escuta apenas em `127.0.0.1`. Adicione autenticação antes de hospedar.
 - Conteúdo público continua protegido por direitos autorais. O upload exige confirmação
   explícita de licença ou autorização.
+- O agente de cortes aceita arquivos de até 1 GB e vídeos de até 4 horas. A URL do
+  YouTube é apenas uma referência; a aplicação não baixa vídeos arbitrários por URL.

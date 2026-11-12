@@ -107,11 +107,18 @@ export class MediaStudioService {
     const previewPath = path.join(directory, 'preview.mp4');
     const videoDuration = await this.duration(item.localFilePath);
     if (!videoDuration)
-      throw new BadRequestException('Não foi possível medir a duração da mídia');
-    const start = Math.min(Math.max(0, input.startSeconds), videoDuration - 0.5);
+      throw new BadRequestException(
+        'Não foi possível medir a duração da mídia',
+      );
+    const start = Math.min(
+      Math.max(0, input.startSeconds),
+      videoDuration - 0.5,
+    );
     const end = Math.min(input.endSeconds, videoDuration);
     if (end <= start + 0.49)
-      throw new BadRequestException('O final do corte deve ser maior que o início');
+      throw new BadRequestException(
+        'O final do corte deve ser maior que o início',
+      );
     const clipDuration = end - start;
     const script = input.script?.trim() ?? '';
     if (input.audio === 'narration' && !script)
@@ -121,16 +128,11 @@ export class MediaStudioService {
         'As legendas automáticas exigem uma narração nesta versão',
       );
 
-    const args = [
-      '-y',
-      '-i',
-      item.localFilePath,
-    ];
+    const args = ['-y', '-ss', start.toFixed(3), '-i', item.localFilePath];
     let audioArgs: string[];
     if (input.audio === 'narration') {
       const speech = await this.client().audio.speech.create({
-        model:
-          this.config.get<string>('OPENAI_TTS_MODEL') || 'gpt-4o-mini-tts',
+        model: this.config.get<string>('OPENAI_TTS_MODEL') || 'gpt-4o-mini-tts',
         voice: input.voice,
         input: script,
         instructions:
@@ -162,15 +164,7 @@ export class MediaStudioService {
     } else {
       audioArgs = ['-map', '0:a?', '-c:a', 'aac', '-b:a', '192k'];
     }
-    args.push(
-      '-ss',
-      start.toFixed(3),
-      '-t',
-      clipDuration.toFixed(3),
-      '-map',
-      '0:v:0',
-      ...audioArgs,
-    );
+    args.push('-t', clipDuration.toFixed(3), '-map', '0:v:0', ...audioArgs);
 
     const videoFilters: string[] = [];
     if (input.format === 'vertical') {

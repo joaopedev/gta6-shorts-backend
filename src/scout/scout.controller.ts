@@ -32,12 +32,6 @@ import { ScoutService } from './scout.service';
 import { YoutubeService } from './youtube.service';
 import { YoutubeCutsService } from './youtube-cuts.service';
 
-const cutsUploadDirectory = path.resolve(
-  process.env.CUTS_STORAGE_PATH || '.data/cuts',
-  'uploads',
-);
-mkdirSync(cutsUploadDirectory, { recursive: true });
-
 @Controller()
 export class ScoutController {
   constructor(
@@ -114,7 +108,14 @@ export class ScoutController {
   @UseInterceptors(
     FileInterceptor('file', {
       storage: diskStorage({
-        destination: cutsUploadDirectory,
+        destination: (_request, _file, callback) => {
+          const directory = path.resolve(
+            process.env.CUTS_STORAGE_PATH || '.data/cuts',
+            'uploads',
+          );
+          mkdirSync(directory, { recursive: true });
+          callback(null, directory);
+        },
         filename: (_request, file, callback) => {
           const extension = path.extname(file.originalname).toLowerCase();
           callback(null, `${randomUUID()}${extension || '.mp4'}`);

@@ -50,6 +50,15 @@ export class YoutubeCutsService {
       throw new BadRequestException(
         'A duração máxima deve ser maior que a duração mínima',
       );
+    if (input.sourceUrl) {
+      const host = new URL(input.sourceUrl).hostname.toLowerCase();
+      const isYoutube =
+        host === 'youtu.be' ||
+        host === 'youtube.com' ||
+        host.endsWith('.youtube.com');
+      if (!isYoutube)
+        throw new BadRequestException('Informe uma URL válida do YouTube');
+    }
     if (!ffmpegPath)
       throw new ServiceUnavailableException(
         'O FFmpeg não está disponível nesta plataforma',
@@ -98,7 +107,8 @@ export class YoutubeCutsService {
 
   async project(id: string) {
     const project = await this.projects.findOneBy({ id });
-    if (!project) throw new NotFoundException('Projeto de cortes não encontrado');
+    if (!project)
+      throw new NotFoundException('Projeto de cortes não encontrado');
     const candidates = await this.candidates.find({
       where: { projectId: id },
       order: { score: 'DESC' },
@@ -160,8 +170,7 @@ export class YoutubeCutsService {
             likeCount: 0,
             commentCount: 0,
             playCount: 0,
-            durationSeconds:
-              suggestion.endSeconds - suggestion.startSeconds,
+            durationSeconds: suggestion.endSeconds - suggestion.startSeconds,
             audioTitle: null,
             sourcePublishedAt: null,
             workflowStatus: 'downloaded',
@@ -204,7 +213,9 @@ export class YoutubeCutsService {
     } catch (error) {
       project.status = 'failed';
       project.error =
-        error instanceof Error ? error.message.slice(0, 1600) : 'Falha desconhecida';
+        error instanceof Error
+          ? error.message.slice(0, 1600)
+          : 'Falha desconhecida';
       await this.projects.save(project);
     }
   }
@@ -318,7 +329,9 @@ export class YoutubeCutsService {
         },
       },
     });
-    const parsed = JSON.parse(response.output_text) as { clips: SuggestedCut[] };
+    const parsed = JSON.parse(response.output_text) as {
+      clips: SuggestedCut[];
+    };
     const normalized = parsed.clips
       .map((clip) => ({
         ...clip,
